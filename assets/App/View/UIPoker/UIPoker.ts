@@ -1,6 +1,6 @@
 
-import { ESuit } from "../../ConfigEnum";
-import Poker from "./Poker";
+import { EPokerStatus, ESuit } from "../../ConfigEnum";
+import { Poker } from "../../GameScene/GameDB";
 
 const POINT_MAP = {
     "1": "A",
@@ -23,6 +23,9 @@ const {ccclass, property} = cc._decorator
 
 @ccclass
 export default class UIPoker extends cc.Component {
+    @property(cc.Sprite)
+    bgSuitSprite: cc.Sprite =null;
+
     @property(cc.Sprite)
     bigSuitSprite: cc.Sprite =null;
 
@@ -47,7 +50,7 @@ export default class UIPoker extends cc.Component {
 
     public Init(poker: Poker) {
         this.pointLabel.string = `${POINT_MAP[poker.point]}`;
-        this.pointLabel.node.color = (poker.suit == ESuit.HeiTao || poker.suit == ESuit.MeiHua ) ? this.blackTextColor : this.redTextColor
+        this.pointLabel.node.color = (poker.suit == ESuit.HEITAO || poker.suit == ESuit.MEIHUA ) ? this.blackTextColor : this.redTextColor
 
         if(poker.point >= 11){
             this.bigSuitSprite.spriteFrame = this.texFaces[poker.point-11]
@@ -55,5 +58,22 @@ export default class UIPoker extends cc.Component {
             this.bigSuitSprite.spriteFrame = this.bigSuits[poker.suit]
         }
         this.smallSuitSprite.spriteFrame = this.smallSuits[poker.suit]
+        this.setStatus(poker.status)
+    }
+
+    private setStatus (status: EPokerStatus){
+        if(status == EPokerStatus.CLOSE){
+            this.pointLabel.node.active = false
+            this.smallSuitSprite.node.active = false
+            this.bigSuitSprite.node.active = false
+            this.bgSuitSprite.spriteFrame = this.texBackBG
+        }else{
+            this.pointLabel.node.active = true
+            this.smallSuitSprite.node.active = true
+            this.bigSuitSprite.node.active = true
+            this.bgSuitSprite.spriteFrame = this.texFrontBG
+
+        }
+
     }
 }

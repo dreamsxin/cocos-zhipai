@@ -79,7 +79,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "Sprite",
+    "_name": "BGSprite",
     "_objFlags": 0,
     "_parent": {
       "__id__": 1
@@ -562,6 +562,9 @@
       "__id__": 1
     },
     "_enabled": true,
+    "bgSuitSprite": {
+      "__id__": 13
+    },
     "bigSuitSprite": {
       "__id__": 4
     },

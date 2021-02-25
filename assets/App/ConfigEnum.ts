@@ -1,7 +1,12 @@
 export enum ESuit{
-    HeiTao = 0,
-    HongXin = 1,
-    MeiHua = 2,
-    FangKuai = 3
+    HEITAO = 0,
+    HONGXING = 1,
+    MEIHUA = 2,
+    FANGKUAI = 3
 
+}
+
+export enum EPokerStatus {
+    CLOSE = 0,
+    OPEN = 1
 }

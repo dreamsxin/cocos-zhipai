@@ -1,4 +1,6 @@
+import EventManager from "../../GameFamework/Event/EventManager";
 import { EPokerStatus, ESuit } from "../ConfigEnum";
+import GameEvent from "./GameEvent";
 
 
 export  class Poker {
@@ -33,10 +35,12 @@ export default class GameDB {
    /********************************************************************
      * public API
      ********************************************************************/
-    public Start() {
+    public Play() {
         let tmp = this._closeAreaPokers
         this._closeAreaPokers = this._pokers
         this._pokers = this._closeAreaPokers
+        //通知 UI 层，发生变化
+        EventManager.getInstance().emit(GameEvent.PLAY, tmp)
         
     }
 
@@ -65,6 +69,8 @@ export default class GameDB {
                 this._pokers.push(poker)
             }
         }
+        //派发初始化牌局的事件
+        EventManager.getInstance().emit(GameEvent.INIT_POKER, this.pokers)
     }
     /********************************************************************
      * getter & setter

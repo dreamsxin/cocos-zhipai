@@ -16,17 +16,22 @@ export default class GameView extends cc.Component {
 
     private playGroupAreaList: cc.Node[] = [] 
 
+    /********************************************************************
+    * private API
+    ********************************************************************/
+
     public InitPokers(pokers: Poker[]){
         //创建所有扑克牌 UI
         pokers.forEach((poker, index) => {
             let uiPoker = this.CreateUIPoker(poker)
-            uiPoker.node.x = 0.5*index
+            uiPoker.node.x = 0.3*index
+            uiPoker.node.y = 0.3*index
             this.initPokerArea.addChild(uiPoker.node)
         })
 
     }
 
-    public Start() {
+    private OnPlay() {
         let stack: cc.Node[] = []
         for(let i = this.initPokerArea.children.length-1; i>=0; --i) {
             let child = this.initPokerArea.children[i]
@@ -39,7 +44,22 @@ export default class GameView extends cc.Component {
             this.closeSendArea.addChild(child)
         }
     }
+    /********************************************************************
+    * Event Handler
+    ********************************************************************/
+    public OnEventInit(pokers) {
+        this.InitPokers(pokers)
 
+    }
+
+    public OnEventPlay(pokers) {
+        this.OnPlay()
+    }
+
+
+    /********************************************************************
+    * private API
+    ********************************************************************/
     private CreateUIPoker(poker: Poker): UIPoker {
         let uiPokerNode = cc.instantiate(this.pokerPrefab)
         let uiPoker: UIPoker =uiPokerNode.getComponent(UIPoker)

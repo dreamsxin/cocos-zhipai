@@ -1,5 +1,5 @@
 
-export class Singleton {
+export  class Singleton {
     // private static instance: any = null;
     public static getInstance<T extends {}>(this: new () => T): T {
 

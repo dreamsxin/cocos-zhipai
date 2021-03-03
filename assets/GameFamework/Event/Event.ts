@@ -3,7 +3,7 @@ import { Singleton } from "../Base/Singleton";
 /**
  * 事件管理器
  */
-export default class EventManager extends Singleton {
+export default class Event extends Singleton {
 
     private subscribes: {} = {}
     private m_emit_reference_count: number = 0

@@ -1,3 +1,6 @@
+import View from "../../../GameFamework/MVC/View";
+import UIUtil from "../../../GameFamework/Util/UIUtil";
+import { EPokerStatus } from "../../ConfigEnum";
 import UIPoker from "../../View/UIPoker/UIPoker";
 import GameDB, { Poker } from "../GameDB";
 
@@ -6,19 +9,26 @@ import GameDB, { Poker } from "../GameDB";
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class GameView extends cc.Component {
+export default class GameView extends View {
     @property(cc.Prefab) pokerPrefab: cc.Prefab = null
     @property(cc.Node) initPokerArea: cc.Node = null
     @property(cc.Node) closeSendArea: cc.Node = null
     @property(cc.Node) openSendArea: cc.Node = null
     @property(cc.Node) receiveAreaList: cc.Node[] = []
-    @property(cc.Node) playGroupAnchor: cc.Node = null
+    @property(cc.Node) playGroupRoot: cc.Node = null
 
-    private playGroupAreaList: cc.Node[] = [] 
 
     /********************************************************************
-    * private API
+    * LifeCycle
     ********************************************************************/
+   public onLoad() {
+    //    for(let i = 0; i <= GameDB.CONST_RECEIVE_GROUPS; ++i) {
+    //        let playGroup = new cc.Node()
+    //        playGroup.position = new cc.Vec3(96*i,0 ,0)
+    //        this.playGroupAnchor.addChild(playGroup)
+    //        this.playGroupList.push(playGroup)
+    //    }
+   }
 
     public InitPokers(pokers: Poker[]){
         //创建所有扑克牌 UI
@@ -45,7 +55,7 @@ export default class GameView extends cc.Component {
         }
     }
     /********************************************************************
-    * Event Handler
+    * DB  Event Handler
     ********************************************************************/
     public OnEventInit(pokers) {
         this.InitPokers(pokers)
@@ -55,7 +65,36 @@ export default class GameView extends cc.Component {
     public OnEventPlay(pokers) {
         this.OnPlay()
     }
+ 
+    public OnEventInitGroupCard(groupIndex: number, cardIndex: number, poker: Poker){
+        let index = GameDB.CONST_RECEIVE_GROUPS*cardIndex - cardIndex*(cardIndex-1)/2 - cardIndex + groupIndex
+        console.log(`g:${groupIndex} c:${cardIndex} p:${poker.point} index:${index}`)
+        //先移动UI
+        let node = poker.view.node
+        UIUtil.move(node,this.playGroupRoot)
 
+        let delay = index*0.05
+        let px = groupIndex*85
+        if(poker.status == EPokerStatus.OPEN){
+            cc.tween(node)
+                .delay(delay)
+                .to(0.5, {position: cc.v3(px, -60*cardIndex)})
+                .to(0.3, {scaleX: 0})
+                .call(() => {
+                    //UI 的显示状态刷新过来
+                      poker.view.Refresh()
+                })
+                .to(0.3, {scaleX: 1})
+                .start()
+        }else{
+            cc.tween(node)
+                .delay(delay)
+                .to(0.5, {position: cc.v3(px, -60*cardIndex)})
+                .start()      
+        }
+        
+
+    }
 
     /********************************************************************
     * private API
@@ -63,8 +102,7 @@ export default class GameView extends cc.Component {
     private CreateUIPoker(poker: Poker): UIPoker {
         let uiPokerNode = cc.instantiate(this.pokerPrefab)
         let uiPoker: UIPoker =uiPokerNode.getComponent(UIPoker)
-        uiPoker.Init(poker)
-        // uiPoker.node.setPosition(Math.random()*300-150,Math.random()*600-200)
+        uiPoker.Init(poker, this)
         return uiPoker
     }
 

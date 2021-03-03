@@ -1,6 +1,9 @@
 
+import View from "../../../GameFamework/MVC/View";
 import { EPokerStatus, ESuit } from "../../ConfigEnum";
 import { Poker } from "../../GameScene/GameDB";
+import GameEvent from "../../GameScene/GameEvent";
+import GameView from "../../GameScene/GameView/GameView";
 
 const POINT_MAP = {
     "1": "A",
@@ -22,7 +25,7 @@ const POINT_MAP = {
 const {ccclass, property} = cc._decorator
 
 @ccclass
-export default class UIPoker extends cc.Component {
+export default class UIPoker extends View {
     @property(cc.Sprite)
     bgSuitSprite: cc.Sprite =null;
 
@@ -45,10 +48,26 @@ export default class UIPoker extends cc.Component {
     private redTextColor: cc.Color = cc.color(183, 24, 40)
     private blackTextColor: cc.Color = cc.Color.BLACK
 
+    private m_poker: Poker = null;
+    public get poker(): Poker { return this.m_poker }
+    private m_view: View = null
 
 
+    /********************************************************************
+    * LifeCycle
+    ********************************************************************/
+    public start() {
+        //注册触摸事件
+        this.node.on(cc.Node.EventType.TOUCH_START, this.onTouchStart, this)
+        this.node.on(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this)
+        this.node.on(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this)
+        this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this)
+    }
 
-    public Init(poker: Poker) {
+    public Init(poker: Poker, view: View) {
+        this.m_poker = poker
+        this.m_view = view
+        poker.Bind(this)
         this.pointLabel.string = `${POINT_MAP[poker.point]}`;
         this.pointLabel.node.color = (poker.suit == ESuit.HEITAO || poker.suit == ESuit.MEIHUA ) ? this.blackTextColor : this.redTextColor
 
@@ -75,5 +94,29 @@ export default class UIPoker extends cc.Component {
 
         }
 
+    }
+
+    onDestroy () {
+        this.node.off(cc.Node.EventType.TOUCH_START, this.onTouchStart, this)
+        this.node.off(cc.Node.EventType.TOUCH_MOVE, this.onTouchMove, this)
+        this.node.off(cc.Node.EventType.TOUCH_END, this.onTouchEnd, this)
+        this.node.off(cc.Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this)
+    }
+
+    public Refresh() {
+        this.setStatus(this.m_poker.status)
+    }
+
+    onTouchStart (event) {
+        let x = this.node.convertTouchToNodeSpaceAR(event).x  
+    }
+    onTouchMove (event) {
+        let x = this.node.convertTouchToNodeSpaceAR(event).x
+        
+    }
+    onTouchEnd (event) {
+        let x = this.node.convertTouchToNodeSpaceAR(event).x
+        this.m_view.emit(GameEvent.CLICK_POKER, this.m_poker)
+        console.log(this.m_poker)
     }
 }

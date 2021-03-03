@@ -1206,7 +1206,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "PlayGroupAncher",
+    "_name": "PlayGroupRoot",
     "_objFlags": 0,
     "_parent": {
       "__id__": 31
@@ -1410,7 +1410,7 @@
         "__id__": 26
       }
     ],
-    "playGroupAnchor": {
+    "playGroupRoot": {
       "__id__": 32
     },
     "_id": ""

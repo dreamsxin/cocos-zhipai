@@ -48,9 +48,9 @@ export default class UIPoker extends View {
     private redTextColor: cc.Color = cc.color(183, 24, 40)
     private blackTextColor: cc.Color = cc.Color.BLACK
 
-    private m_poker: Poker = null;
-    public get poker(): Poker { return this.m_poker }
-    private m_view: View = null
+    private m_Poker: Poker = null;
+    public get poker(): Poker { return this.m_Poker }
+    private m_View: GameView = null
 
 
     /********************************************************************
@@ -64,9 +64,9 @@ export default class UIPoker extends View {
         this.node.on(cc.Node.EventType.TOUCH_CANCEL, this.onTouchEnd, this)
     }
 
-    public Init(poker: Poker, view: View) {
-        this.m_poker = poker
-        this.m_view = view
+    public Init(poker: Poker, view: GameView) {
+        this.m_Poker = poker
+        this.m_View = view
         poker.Bind(this)
         this.pointLabel.string = `${POINT_MAP[poker.point]}`;
         this.pointLabel.node.color = (poker.suit == ESuit.HEITAO || poker.suit == ESuit.MEIHUA ) ? this.blackTextColor : this.redTextColor
@@ -104,7 +104,7 @@ export default class UIPoker extends View {
     }
 
     public Refresh() {
-        this.setStatus(this.m_poker.status)
+        this.setStatus(this.m_Poker.status)
     }
 
     onTouchStart (event) {
@@ -116,7 +116,8 @@ export default class UIPoker extends View {
     }
     onTouchEnd (event) {
         let x = this.node.convertTouchToNodeSpaceAR(event).x
-        this.m_view.emit(GameEvent.CLICK_POKER, this.m_poker)
-        console.log(this.m_poker)
+        this.m_View.emit(GameEvent.CLICK_POKER, this.m_Poker)
+        console.log(this.m_Poker)
+        this.m_View.OnClickUIPoker(this)
     }
 }

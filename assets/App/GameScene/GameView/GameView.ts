@@ -95,6 +95,13 @@ export default class GameView extends View {
         
 
     }
+    /********************************************************************
+    * Interface for UIPoker
+    ********************************************************************/
+    public OnClickUIPoker(uiPoker: UIPoker){
+        //TODD
+    }
+
 
     /********************************************************************
     * private API

@@ -1,8 +1,10 @@
+import Model from "../../../GameFamework/MVC/Model";
 import View from "../../../GameFamework/MVC/View";
 import UIUtil from "../../../GameFamework/Util/UIUtil";
 import { EPokerStatus } from "../../ConfigEnum";
 import UIPoker from "../../View/UIPoker/UIPoker";
 import GameDB, { Poker } from "../GameDB";
+import GameEvent from "../GameEvent";
 
 
 
@@ -17,18 +19,25 @@ export default class GameView extends View {
     @property(cc.Node) receiveAreaList: cc.Node[] = []
     @property(cc.Node) playGroupRoot: cc.Node = null
 
+    private m_Model: GameDB = null
 
     /********************************************************************
     * LifeCycle
     ********************************************************************/
-   public onLoad() {
-    //    for(let i = 0; i <= GameDB.CONST_RECEIVE_GROUPS; ++i) {
-    //        let playGroup = new cc.Node()
-    //        playGroup.position = new cc.Vec3(96*i,0 ,0)
-    //        this.playGroupAnchor.addChild(playGroup)
-    //        this.playGroupList.push(playGroup)
-    //    }
-   }
+    public BindModel(model: GameDB) {
+        this.m_Model = model
+        this.m_Model.on(GameEvent.INIT_POKER, this.OnEventInit, this)
+        this.m_Model.on(GameEvent.PLAY, this.OnEventPlay, this)
+        this.m_Model.on(GameEvent.INIT_GROUP_CARD, this.OnEventInitGroupCard, this)
+        this.on(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, this.m_Model.OnEventPokerMoveFromPlayAreaToReceiveArea, this.m_Model)
+    }
+
+    public UnbindModel() {
+        this.m_Model.off(GameEvent.INIT_POKER, this.OnEventInit)
+        this.m_Model.off(GameEvent.PLAY, this.OnEventPlay)
+        this.m_Model.off(GameEvent.INIT_GROUP_CARD, this.OnEventInitGroupCard)
+        this.off(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, this.m_Model.OnEventPokerMoveFromPlayAreaToReceiveArea)
+    }
 
     public InitPokers(pokers: Poker[]){
         //创建所有扑克牌 UI
@@ -99,7 +108,21 @@ export default class GameView extends View {
     * Interface for UIPoker
     ********************************************************************/
     public OnClickUIPoker(uiPoker: UIPoker){
-        //TODD
+        //TODO
+        //1.这张牌在玩牌区
+        //2.这张牌是翻开的
+        //3.这张牌是最上方的一张牌
+        //4.这张牌的点数是A
+        //-->这张牌可以移动到手牌区
+        if(this.isLocationPlayArea(uiPoker)) {
+            if(uiPoker.isOpen()) {
+                if(this.isIndexPlayAreaGroupTop(uiPoker)) {
+                    if(uiPoker.isPoint(1)) {
+                        this.emit(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, uiPoker.poker)
+                    }
+                }
+            }
+        }
     }
 
 
@@ -112,5 +135,12 @@ export default class GameView extends View {
         uiPoker.Init(poker, this)
         return uiPoker
     }
+    private isLocationPlayArea(uiPoker: UIPoker): boolean {
+        return this.m_Model.isLocationPlayArea(uiPoker.poker)
+    }
+    private isIndexPlayAreaGroupTop(uiPoker: UIPoker): boolean {
+        return this.m_Model.isIndexPlayAreaGroupTop(uiPoker.poker)
+    }
+    
 
 }

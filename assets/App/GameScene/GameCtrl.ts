@@ -12,11 +12,8 @@ export default class GameCtrl{
 
     public Init(gameView: GameView){
         this.m_GameView = gameView
-        this.m_GameDB = new GameDB()  
-        this.m_GameDB.on(GameEvent.INIT_POKER, this.m_GameView.OnEventInit, this.m_GameView)
-        this.m_GameDB.on(GameEvent.PLAY, this.m_GameView.OnEventPlay, this.m_GameView)
-        this.m_GameDB.on(GameEvent.INIT_GROUP_CARD, this.m_GameView.OnEventInitGroupCard, this.m_GameView)
-        this.m_GameView.on(GameEvent.CLICK_POKER, this.m_GameDB.OnEventClickPoker, this.m_GameDB)
+        this.m_GameDB = new GameDB()
+        this.m_GameView.BindModel(this.m_GameDB)  
         this.m_GameDB.Init()
 
     }
@@ -30,10 +27,7 @@ export default class GameCtrl{
     }
 
     public Exit() {
-        this.m_GameDB.off(GameEvent.INIT_POKER, this.m_GameView.OnEventInit)
-        this.m_GameDB.off(GameEvent.PLAY, this.m_GameView.OnEventPlay)
-        this.m_GameDB.off(GameEvent.INIT_GROUP_CARD, this.m_GameView.OnEventInitGroupCard)
-        this.m_GameView.off(GameEvent.CLICK_POKER, this.m_GameDB.OnEventClickPoker)
+        this.m_GameView.UnbindModel()
     }
   
 }

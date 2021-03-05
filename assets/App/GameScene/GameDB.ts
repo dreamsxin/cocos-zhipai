@@ -121,11 +121,28 @@ export default class GameDB  extends Model{
         }
         
     }
+
+    public isLocationPlayArea(poker: Poker): boolean {
+        return this.playAreaPokerGroups.filter(
+            pg => pg.Pokers.filter(p => p.point === poker.point && p.suit === poker.suit).length > 0).length > 0
+    }
+    public isIndexPlayAreaGroupTop(poker: Poker): boolean {
+        for(let pg of this.playAreaPokerGroups) {
+            let pokers = pg.Pokers
+            if(pokers.length > 0) {
+                let p = pokers[pokers.length-1]
+                if(p.point === poker.point && p.suit === poker.suit){
+                    return true
+                }
+            }
+        }
+        return false
+    }
     /********************************************************************
      * Event Handler
     ********************************************************************/ 
-    public OnEventClickPoker(poker: Poker) {
-        console.log(poker)
+    public OnEventPokerMoveFromPlayAreaToReceiveArea(poker: Poker) {
+        console.log(`GameDB:OnEventPokerMoveFromPlayAreaToReceiveArea >> ${poker}`)
     }
 
 

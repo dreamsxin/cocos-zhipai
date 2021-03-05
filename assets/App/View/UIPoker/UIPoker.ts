@@ -106,7 +106,23 @@ export default class UIPoker extends View {
     public Refresh() {
         this.setStatus(this.m_Poker.status)
     }
+    /********************************************************************
+    * public Api
+    ********************************************************************/
+   //牌面是不是超上
+   public isOpen(): boolean {
+        //TODO
+       return this.poker.status == EPokerStatus.OPEN
+   }
 
+   public isPoint(point:number): boolean {
+        //TODO
+        return this.poker.point == point
+   }
+    
+    /********************************************************************
+    * Event Handler
+    ********************************************************************/
     onTouchStart (event) {
         let x = this.node.convertTouchToNodeSpaceAR(event).x  
     }

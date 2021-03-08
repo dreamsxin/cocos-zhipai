@@ -1,7 +1,7 @@
 
 import View from "../../../GameFamework/MVC/View";
 import { EPokerStatus, ESuit } from "../../ConfigEnum";
-import { Poker } from "../../GameScene/GameDB";
+import { Poker } from "../../GameScene/GameModel";
 import GameEvent from "../../GameScene/GameEvent";
 import GameView from "../../GameScene/GameView/GameView";
 

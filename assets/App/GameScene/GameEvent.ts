@@ -5,5 +5,6 @@ export default class GameEvent {
     public static CLICK_POKER: string = 'CLICK_POKER'
     //扑克牌从玩牌区移动到收牌区事件
     public static CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA: string = 'CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA'
+    public static ON_CLICK_NEW_GAME: string = 'ON_CLICK_NEW_GAME'
 
 }

@@ -1,5 +1,6 @@
 
-import GameCtrl from "./GameCtrl";
+
+import GameCtroller from "./GameCtroller";
 import GameView from "./GameView/GameView";
 
 
@@ -19,21 +20,28 @@ export default class GameScene extends cc.Component {
     gameViewPrefab: cc.Prefab = null
 
     private m_GameView: GameView = null;
-    private m_GameCtrl: GameCtrl = null;
+    private m_GameCtroller: GameCtroller = null;
     
     start () {
         console.log(">> GameScene start!")
         this.m_GameView = cc.instantiate(this.gameViewPrefab).getComponent(GameView)
         this.node.addChild(this.m_GameView.node)
-        this.m_GameCtrl = new GameCtrl();
+        this.m_GameCtroller = new GameCtroller();
         console.log(">> GameScene Init!")
-        this.m_GameCtrl.Init(this.m_GameView)
+        this.m_GameCtroller.Init(this.m_GameView)
         console.log(">> GameScene Play!")
-        this.m_GameCtrl.Play()
+        this.m_GameCtroller.Play()
 
     }
 
-    onDestroy () {
-        this.m_GameCtrl.Exit()
+
+    NewGame() {
+        this.ExitGame(this.m_GameCtroller)
+        this.m_GameCtroller.Init (this.m_GameView)
+    }
+    ExitGame(gameController: GameCtroller) {
+        if(gameController != null) {
+            gameController.Exit()
+        }
     }
 }

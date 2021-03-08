@@ -2,8 +2,9 @@ import Model from "../../../GameFamework/MVC/Model";
 import View from "../../../GameFamework/MVC/View";
 import UIUtil from "../../../GameFamework/Util/UIUtil";
 import { EPokerStatus } from "../../ConfigEnum";
+import Pool from "../../Pool/Pool";
 import UIPoker from "../../View/UIPoker/UIPoker";
-import GameDB, { Poker } from "../GameDB";
+import GameDB, { Poker } from "../GameModel";
 import GameEvent from "../GameEvent";
 
 
@@ -26,14 +27,14 @@ export default class GameView extends View {
     ********************************************************************/
     public BindModel(model: GameDB) {
         this.m_Model = model
-        this.m_Model.on(GameEvent.INIT_POKER, this.OnEventInit, this)
+        this.m_Model.on(GameEvent.INIT_POKER, this.OnEventInitPokers, this)
         this.m_Model.on(GameEvent.PLAY, this.OnEventPlay, this)
         this.m_Model.on(GameEvent.INIT_GROUP_CARD, this.OnEventInitGroupCard, this)
         this.on(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, this.m_Model.OnEventPokerMoveFromPlayAreaToReceiveArea, this.m_Model)
     }
 
     public UnbindModel() {
-        this.m_Model.off(GameEvent.INIT_POKER, this.OnEventInit)
+        this.m_Model.off(GameEvent.INIT_POKER, this.OnEventInitPokers)
         this.m_Model.off(GameEvent.PLAY, this.OnEventPlay)
         this.m_Model.off(GameEvent.INIT_GROUP_CARD, this.OnEventInitGroupCard)
         this.off(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, this.m_Model.OnEventPokerMoveFromPlayAreaToReceiveArea)
@@ -50,6 +51,14 @@ export default class GameView extends View {
 
     }
 
+    public Exit() {
+        this.m_Model.pokers.forEach(p=>{
+            Pool.getInstance().uipoker.put(p.view.node)
+        })
+    }
+
+
+
     private OnPlay() {
         let stack: cc.Node[] = []
         for(let i = this.initPokerArea.children.length-1; i>=0; --i) {
@@ -63,16 +72,34 @@ export default class GameView extends View {
             this.closeSendArea.addChild(child)
         }
     }
+
     /********************************************************************
     * DB  Event Handler
     ********************************************************************/
-    public OnEventInit(pokers) {
-        this.InitPokers(pokers)
+    listNotificationInterests(): string[]{
+        return [GameEvent.INIT_POKER, GameEvent.PLAY, GameEvent.INIT_GROUP_CARD]
+    }
+    
+    public OnEventInitPokers(pokers: Poker[]) {
+         //创建所有扑克牌 UI
+         pokers.forEach((poker, index) => {
+            let uiPoker = this.CreateUIPoker(poker)
+            uiPoker.node.x = 0.3*index
+            uiPoker.node.y = 0.3*index
+            this.initPokerArea.addChild(uiPoker.node)
+        })
 
     }
 
-    public OnEventPlay(pokers) {
-        this.OnPlay()
+    public OnEventPlay() {
+        // |0 1 2 ... top
+        for(let i = this.initPokerArea.children.length-1; i>=0; --i){
+            let child = this.initPokerArea.children[i]
+            this.initPokerArea.removeChild(child, false)
+            this.closeSendArea.addChild(child)
+        }
+        //TODO 对各个节点进行排序
+        this.m_Model.closeAreaPokers.forEach((p, index) => p.view.node.zIndex = index)
     }
  
     public OnEventInitGroupCard(groupIndex: number, cardIndex: number, poker: Poker){
@@ -84,26 +111,29 @@ export default class GameView extends View {
 
         let delay = index*0.05
         let px = groupIndex*85
+        let tw = cc.tween(node)
+                    .delay(delay)
+                    .call((node)=>{
+                        node.zIndex = index
+                    })
+                    .to(0.5, {position: cc.v2(px, -30*pokerIndex)})
         if(poker.status == EPokerStatus.OPEN){
-            cc.tween(node)
-                .delay(delay)
-                .to(0.5, {position: cc.v3(px, -60*cardIndex)})
-                .to(0.3, {scaleX: 0})
+            tw = tw.to(0.3, {scaleX: 0})
                 .call(() => {
                     //UI 的显示状态刷新过来
                       poker.view.Refresh()
                 })
                 .to(0.3, {scaleX: 1})
-                .start()
-        }else{
-            cc.tween(node)
-                .delay(delay)
-                .to(0.5, {position: cc.v3(px, -60*cardIndex)})
-                .start()      
         }
-        
-
+        tw.start()
     }
+    /********************************************************************
+    * UI  Event Handler
+    ********************************************************************/
+    public OnClickNewGame() {
+        this.facade.sendNotification(GameEvent.ON_CLICK_NEW_GAME)
+    }
+
     /********************************************************************
     * Interface for UIPoker
     ********************************************************************/
@@ -130,7 +160,11 @@ export default class GameView extends View {
     * private API
     ********************************************************************/
     private CreateUIPoker(poker: Poker): UIPoker {
-        let uiPokerNode = cc.instantiate(this.pokerPrefab)
+        let uiPokerNode = Pool.getInstance().uipoker.get()
+        if( uiPokerNode == null) {
+            uiPokerNode = cc.instantiate(this.pokerPrefab)
+        }
+        
         let uiPoker: UIPoker =uiPokerNode.getComponent(UIPoker)
         uiPoker.Init(poker, this)
         return uiPoker

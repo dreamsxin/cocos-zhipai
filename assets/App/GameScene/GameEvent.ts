@@ -1,10 +1,14 @@
 export default class GameEvent {
-    public static INIT_POKER: string = 'INIT_POKER'
-    public static PLAY: string = 'PLAY'
-    public static INIT_GROUP_CARD: string = 'INIT_GROUP_CARD'
-    public static CLICK_POKER: string = 'CLICK_POKER'
-    //扑克牌从玩牌区移动到收牌区事件
-    public static CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA: string = 'CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA'
+    //内部通信消息
     public static ON_CLICK_NEW_GAME: string = 'ON_CLICK_NEW_GAME'
+    //VieW 发出的消息
+    // public static CLICK_POKER: string = 'CLICK_POKER'
+    
+    //数据库发出的消息
+    public static SC_INIT_POKER: string = 'SC_INIT_POKER'
+    public static SC_PLAY: string = 'SC_PLAY'
+    public static SC_INIT_GROUP_CARD: string = 'SC_INIT_GROUP_CARD'
+    public static SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE: string = 'SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE'
+    public static SC_FLIP_POKER: string = 'SC_FLIP_POKER'
 
 }

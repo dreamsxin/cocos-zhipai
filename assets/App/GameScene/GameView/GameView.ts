@@ -4,8 +4,9 @@ import UIUtil from "../../../GameFamework/Util/UIUtil";
 import { EPokerStatus } from "../../ConfigEnum";
 import Pool from "../../Pool/Pool";
 import UIPoker from "../../View/UIPoker/UIPoker";
-import GameDB, { Poker } from "../GameModel";
 import GameEvent from "../GameEvent";
+import GameModel, { Poker } from "../GameModel";
+import GameScene from "../GameScene";
 
 
 
@@ -20,37 +21,39 @@ export default class GameView extends View {
     @property(cc.Node) receiveAreaList: cc.Node[] = []
     @property(cc.Node) playGroupRoot: cc.Node = null
 
-    private m_Model: GameDB = null
+    private m_Model: GameModel = null
 
     /********************************************************************
     * LifeCycle
     ********************************************************************/
-    public BindModel(model: GameDB) {
+    public BindModel(model: GameModel) {
+        console.log('>> GameView:BindModel')
         this.m_Model = model
-        this.m_Model.on(GameEvent.INIT_POKER, this.OnEventInitPokers, this)
-        this.m_Model.on(GameEvent.PLAY, this.OnEventPlay, this)
-        this.m_Model.on(GameEvent.INIT_GROUP_CARD, this.OnEventInitGroupCard, this)
-        this.on(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, this.m_Model.OnEventPokerMoveFromPlayAreaToReceiveArea, this.m_Model)
+        this.m_Model.on(GameEvent.SC_INIT_POKER, this.OnEventInitPokers, this)
+        this.m_Model.on(GameEvent.SC_PLAY, this.OnEventPlay, this)
+        this.m_Model.on(GameEvent.SC_INIT_GROUP_CARD, this.OnEventInitGroupCard, this)
+        this.m_Model.on(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, this.OnEventMovePokerFromPlayToReceive, this)
     }
 
     public UnbindModel() {
-        this.m_Model.off(GameEvent.INIT_POKER, this.OnEventInitPokers)
-        this.m_Model.off(GameEvent.PLAY, this.OnEventPlay)
-        this.m_Model.off(GameEvent.INIT_GROUP_CARD, this.OnEventInitGroupCard)
-        this.off(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, this.m_Model.OnEventPokerMoveFromPlayAreaToReceiveArea)
+        console.log('>> GameView:UnbindModel')
+        this.m_Model.off(GameEvent.SC_INIT_POKER, this.OnEventInitPokers)
+        this.m_Model.off(GameEvent.SC_PLAY, this.OnEventPlay)
+        this.m_Model.off(GameEvent.SC_INIT_GROUP_CARD, this.OnEventInitGroupCard)
+        this.m_Model.off(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, this.OnEventMovePokerFromPlayToReceive)
     }
 
-    public InitPokers(pokers: Poker[]){
-        //创建所有扑克牌 UI
-        pokers.forEach((poker, index) => {
-            let uiPoker = this.CreateUIPoker(poker)
-            uiPoker.node.x = 0.3*index
-            uiPoker.node.y = 0.3*index
-            this.initPokerArea.addChild(uiPoker.node)
-        })
+    // public InitPokers(pokers: Poker[]){
+    //     //创建所有扑克牌 UI
+    //     pokers.forEach((poker, index) => {
+    //         let uiPoker = this.CreateUIPoker(poker)
+    //         uiPoker.node.x = 0.3*index
+    //         uiPoker.node.y = 0.3*index
+    //         this.initPokerArea.addChild(uiPoker.node)
+    //     })
 
-    }
-
+    // }
+    
     public Exit() {
         this.m_Model.pokers.forEach(p=>{
             Pool.getInstance().uipoker.put(p.view.node)
@@ -76,11 +79,44 @@ export default class GameView extends View {
     /********************************************************************
     * DB  Event Handler
     ********************************************************************/
-    listNotificationInterests(): string[]{
-        return [GameEvent.INIT_POKER, GameEvent.PLAY, GameEvent.INIT_GROUP_CARD]
-    }
+    // listNotificationInterests(): string[]{
+    //     return [GameEvent.SC_INIT_POKER, 
+    //         GameEvent.SC_PLAY, 
+    //         GameEvent.SC_INIT_GROUP_CARD,
+    //         GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE,
+    //         GameEvent.SC_FLIP_POKER
+    //     ]
+
+    // }
+
+    // handleNotification( notification:Model): void{
+    //     let notificationName = notification.getName()
+    //     let body = notification.getBody();
+    //     switch(notificationName) {
+    //         case GameEvent.SC_INIT_POKER:
+    //             this.OnEventInitPokers(body as Poker[])
+    //             break;
+    //         case GameEvent.SC_PLAY:
+    //             this.OnEventPlay()
+    //             break;
+    //         case GameEvent.SC_INIT_GROUP_CARD:
+    //             let { groupIndex, pokerIndex, poker} : {groupIndex: number, pokerIndex: number, poker: Poker} = body;
+    //             this.OnEventInitGroupCard(groupIndex, pokerIndex, poker)
+    //             break;
+    //         case GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE:
+    //             this.OnEventMovePokerFromPlayToTeceive(body as Poker)
+    //             break;
+    //         case GameEvent.SC_FLIP_POKER:
+    //             this.OnEventFlipPoker(body as Poker)
+    //             break;
+    //         default:
+    //             break;
+    //     }
+    // }
+
     
     public OnEventInitPokers(pokers: Poker[]) {
+        console.log('>> GameView:OnEventInitPokers')
          //创建所有扑克牌 UI
          pokers.forEach((poker, index) => {
             let uiPoker = this.CreateUIPoker(poker)
@@ -92,6 +128,7 @@ export default class GameView extends View {
     }
 
     public OnEventPlay() {
+        console.log('>> GameView:OnEventPlay')
         // |0 1 2 ... top
         for(let i = this.initPokerArea.children.length-1; i>=0; --i){
             let child = this.initPokerArea.children[i]
@@ -102,12 +139,14 @@ export default class GameView extends View {
         this.m_Model.closeAreaPokers.forEach((p, index) => p.view.node.zIndex = index)
     }
  
-    public OnEventInitGroupCard(groupIndex: number, cardIndex: number, poker: Poker){
-        let index = GameDB.CONST_RECEIVE_GROUPS*cardIndex - cardIndex*(cardIndex-1)/2 - cardIndex + groupIndex
-        console.log(`g:${groupIndex} c:${cardIndex} p:${poker.point} index:${index}`)
+    public OnEventInitGroupCard(groupIndex: number, pokerIndex: number, poker: Poker){
+        console.log('>> GameView:OnEventInitGroupCard')
+        let index = GameModel.CONST_RECEIVE_GROUPS*pokerIndex - pokerIndex*(pokerIndex-1)/2 - pokerIndex + groupIndex
+        // console.log(`g:${groupIndex} c:${pokerIndex} p:${poker.point} index:${index}`)
         //先移动UI
         let node = poker.view.node
         UIUtil.move(node,this.playGroupRoot)
+        node.zIndex = -1
 
         let delay = index*0.05
         let px = groupIndex*85
@@ -116,7 +155,7 @@ export default class GameView extends View {
                     .call((node)=>{
                         node.zIndex = index
                     })
-                    .to(0.5, {position: cc.v2(px, -30*pokerIndex)})
+                    .to(0.5, {position: cc.v3(px, -30*pokerIndex, 0)})
         if(poker.status == EPokerStatus.OPEN){
             tw = tw.to(0.3, {scaleX: 0})
                 .call(() => {
@@ -127,11 +166,35 @@ export default class GameView extends View {
         }
         tw.start()
     }
+
+    public OnEventMovePokerFromPlayToReceive(poker: Poker) {
+        console.log('>> GameView:OnEventMovePokerFromPlayToReceive')
+        let receiveIndex: number = null
+        let node = poker.view.node
+        let receiveArea: cc.Node = this.receiveAreaList[receiveIndex]
+        UIUtil.move(node, receiveArea)
+        node.zIndex = poker.point
+        cc.tween(node)
+            .to(0.5, {position: cc.v3(0,0,0)})
+            .start()
+    }
+
+    public OnEventFlipPoker(poker: Poker) {
+        console.log('>> GameView:OnEventFlipPoker')
+        cc.tween(poker.view.node)
+            .to(0.3, {scaleX: 0})
+            .call((node)=>{
+                poker.view.Refresh()
+            })
+            .to(0.3, {scaleX: 1})
+            .start()
+    }
     /********************************************************************
     * UI  Event Handler
     ********************************************************************/
     public OnClickNewGame() {
-        this.facade.sendNotification(GameEvent.ON_CLICK_NEW_GAME)
+         this.emit(GameEvent.ON_CLICK_NEW_GAME)
+        
     }
 
     /********************************************************************
@@ -145,10 +208,14 @@ export default class GameView extends View {
         //4.这张牌的点数是A
         //-->这张牌可以移动到手牌区
         if(this.isLocationPlayArea(uiPoker)) {
+            console.log('>> GameView:OnClickUIPoker1')
             if(uiPoker.isOpen()) {
+                console.log('>> GameView:OnClickUIPoker2')
                 if(this.isIndexPlayAreaGroupTop(uiPoker)) {
+                    console.log('>> GameView:OnClickUIPoker3')
                     if(uiPoker.isPoint(1)) {
-                        this.emit(GameEvent.CS_POKER_MOVE_FROM_PLAYAREA_TO_RECEIVERAREA, uiPoker.poker)
+                        console.log('>> GameView:OnClickUIPoker4')
+                        this.emit(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, uiPoker.poker)
                     }
                 }
             }

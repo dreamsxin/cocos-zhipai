@@ -52,6 +52,12 @@ export default class UIPoker extends View {
     public get poker(): Poker { return this.m_Poker }
     private m_View: GameView = null
 
+    private m_isTouchStart: boolean = false
+    private m_isDragStart: boolean = false
+    private m_StartToDragSchedule: Function = null
+    private m_DragStartNodePostion: cc.Vec3 = null
+    private m_TouchLocation: cc.Vec2 = null
+
 
     /********************************************************************
     * LifeCycle
@@ -123,17 +129,58 @@ export default class UIPoker extends View {
     /********************************************************************
     * Event Handler
     ********************************************************************/
-    onTouchStart (event) {
-        let x = this.node.convertTouchToNodeSpaceAR(event).x  
+    onTouchStart (event: cc.Event.EventTouch) {
+        if(this.m_isTouchStart){
+            return
+        }
+        this.m_isTouchStart = true
+        this.m_isDragStart = false
+        // this.m_TouchLocation = event.getLocation()
+        this.m_StartToDragSchedule = () => {
+            console.log('>> UIPoker: Start TO Drag')
+            this.m_isDragStart = true
+            this.m_DragStartNodePostion = this.node.position
+        }
+        this.scheduleOnce(this.m_StartToDragSchedule, 0.2)
+        let x = this.node.convertToNodeSpaceAR(event.getLocation()).x  
     }
-    onTouchMove (event) {
-        let x = this.node.convertTouchToNodeSpaceAR(event).x
+    onTouchMove (event: cc.Event.EventTouch) {
+        if(!this.m_isTouchStart){
+            return
+        }
+        if(this.m_isDragStart) {
+            if(this.m_TouchLocation == null) {
+                this.m_TouchLocation = event.getLocation()
+                console.log(`>> UIPoker: Touchx:${this.m_TouchLocation .x} Touchy: ${this.m_TouchLocation .y}`)
+
+            }
+            let newTouchLocation = event.getLocation()
+            let dx = newTouchLocation.x - this.m_TouchLocation.x
+            let dy = newTouchLocation.y - this.m_TouchLocation.y
+            this.node.x = this.m_DragStartNodePostion.x + dx
+            this.node.y = this.m_DragStartNodePostion.y + dy
+            console.log(`>> UIPoker: x:${this.node.x} y: ${this.node.y}`)
+        }
+        
+        // let x = this.node.convertToNodeSpaceAR(event.getLocation()).x
         
     }
-    onTouchEnd (event) {
-        let x = this.node.convertTouchToNodeSpaceAR(event).x
-        this.m_View.emit(GameEvent.CLICK_POKER, this.m_Poker)
+    onTouchEnd (event: cc.Event.EventTouch) {
+        if(!this.m_isTouchStart){
+            return
+        }
+        this.m_isTouchStart = false
+        this.unschedule(this.m_StartToDragSchedule)
+        this.m_TouchLocation = null
+        //复位动画
+        if(this.m_isDragStart){
+            this.m_isDragStart = false
+            cc.tween(this.node)
+                .to(0.2, {position: this.m_DragStartNodePostion})
+                .start()
+        }
+        // let x = this.node.convertToNodeSpaceAR(event.getLocation()).x
         console.log(this.m_Poker)
-        this.m_View.OnClickUIPoker(this)
+        // this.m_View.OnClickUIPoker(this)
     }
 }

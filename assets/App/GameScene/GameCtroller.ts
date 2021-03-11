@@ -20,7 +20,7 @@ export default class GameCtroller {
     }
 
     public Play() {
-        console.log(">> GameCtroller start!")
+        console.log(">> GameCtroller Play!")
         //移动所有牌到发牌区
         this.m_GameModel.Play()
         

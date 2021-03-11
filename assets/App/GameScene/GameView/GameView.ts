@@ -22,6 +22,8 @@ export default class GameView extends View {
     @property(cc.Node) playGroupRoot: cc.Node = null
 
     private m_Model: GameModel = null
+    private m_GameScene: GameScene = null
+
 
     /********************************************************************
     * LifeCycle
@@ -33,6 +35,7 @@ export default class GameView extends View {
         this.m_Model.on(GameEvent.SC_PLAY, this.OnEventPlay, this)
         this.m_Model.on(GameEvent.SC_INIT_GROUP_CARD, this.OnEventInitGroupCard, this)
         this.m_Model.on(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, this.OnEventMovePokerFromPlayToReceive, this)
+        
     }
 
     public UnbindModel() {
@@ -193,7 +196,10 @@ export default class GameView extends View {
     * UI  Event Handler
     ********************************************************************/
     public OnClickNewGame() {
-         this.emit(GameEvent.ON_CLICK_NEW_GAME)
+        //  this.emit(GameEvent.ON_CLICK_NEW_GAME)
+         this.m_GameScene.NewGame()
+         
+         
         
     }
 
@@ -215,6 +221,7 @@ export default class GameView extends View {
                     console.log('>> GameView:OnClickUIPoker3')
                     if(uiPoker.isPoint(1)) {
                         console.log('>> GameView:OnClickUIPoker4')
+
                         this.emit(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, uiPoker.poker)
                     }
                 }
@@ -229,6 +236,7 @@ export default class GameView extends View {
     private CreateUIPoker(poker: Poker): UIPoker {
         let uiPokerNode = Pool.getInstance().uipoker.get()
         if( uiPokerNode == null) {
+            console.log('>> GameView:CreateUIPoker')
             uiPokerNode = cc.instantiate(this.pokerPrefab)
         }
         

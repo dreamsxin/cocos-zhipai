@@ -1,8 +1,7 @@
 
-import View from "../../../GameFamework/MVC/View";
+import { puremvc } from "../../../GameFamework/MVC/puremvc";
 import { EPokerStatus, ESuit } from "../../ConfigEnum";
 import { Poker } from "../../GameScene/GameModel";
-import GameEvent from "../../GameScene/GameEvent";
 import GameView from "../../GameScene/GameView/GameView";
 
 const POINT_MAP = {
@@ -25,18 +24,13 @@ const POINT_MAP = {
 const {ccclass, property} = cc._decorator
 
 @ccclass
-export default class UIPoker extends View {
-    @property(cc.Sprite)
-    bgSuitSprite: cc.Sprite =null;
-
-    @property(cc.Sprite)
-    bigSuitSprite: cc.Sprite =null;
-
-    @property(cc.Sprite)
-    smallSuitSprite: cc.Sprite =null;
-
-    @property(cc.Label)
-    pointLabel: cc.Label = null;
+export default class UIPoker extends  
+puremvc.View<Poker> 
+{
+    @property(cc.Sprite)bgSuitSprite: cc.Sprite =null;
+    @property(cc.Sprite)bigSuitSprite: cc.Sprite =null;
+    @property(cc.Sprite)smallSuitSprite: cc.Sprite =null;
+    @property(cc.Label)pointLabel: cc.Label = null;
 
     //resources
     @property(cc.SpriteFrame) texFrontBG: cc.SpriteFrame = null
@@ -72,6 +66,7 @@ export default class UIPoker extends View {
 
     public Init(poker: Poker, view: GameView) {
         this.m_Poker = poker
+        // this.model = poker
         this.m_View = view
         poker.Bind(this)
         this.pointLabel.string = `${POINT_MAP[poker.point]}`;
@@ -182,5 +177,6 @@ export default class UIPoker extends View {
         // let x = this.node.convertToNodeSpaceAR(event.getLocation()).x
         console.log(this.m_Poker)
         // this.m_View.OnClickUIPoker(this)
+        
     }
 }

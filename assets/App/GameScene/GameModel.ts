@@ -1,5 +1,5 @@
 
-import Model from "../../GameFamework/MVC/Model";
+import { puremvc } from "../../GameFamework/MVC/puremvc";
 import { EPokerStatus, ESuit } from "../ConfigEnum";
 import UIPoker from "../View/UIPoker/UIPoker";
 import GameEvent from "./GameEvent";
@@ -87,7 +87,7 @@ class PlayPokerGroup extends PokerGroup {
     }
 }
 
-export default class GameModel  extends Model{
+export default class GameModel  extends puremvc.Model{
     /********************************************************************
         * getter & setter
     ********************************************************************/
@@ -111,7 +111,7 @@ export default class GameModel  extends Model{
     private _playAreaPokerGroups:PlayPokerGroup[] = []
 
 
-    public static readonly CONST_RECEIVE_GROUPS: number = 7
+    public static readonly CONST_RECEIVE_GROUPS: number = 4
     public static readonly CONST_PLAY_GROUPS: number = 7
     /********************************************************************
      * public startic API
@@ -135,7 +135,7 @@ export default class GameModel  extends Model{
         //初始化牌局结构
         for(let i=0; i< GameModel.CONST_PLAY_GROUPS; ++i){
             let pokerGroup = new PokerGroup()
-            pokerGroup.index = this._receiveAreaPokerGroups.length
+            pokerGroup.index = this._playAreaPokerGroups.length
             this._playAreaPokerGroups.push(pokerGroup)
         }
         //初始化扑克
@@ -146,7 +146,8 @@ export default class GameModel  extends Model{
             }
         }
         //派发初始化牌局的事件
-        this.emit(GameEvent.SC_INIT_POKER, this._pokers)
+        // this.emit(GameEvent.SC_INIT_POKER, this._pokers)
+        this.facade.sendNotification(GameEvent.SC_INIT_POKER, this._pokers);
     }
     public Play() {
         //洗牌
@@ -156,8 +157,8 @@ export default class GameModel  extends Model{
         this._closeAreaPokers = this._pokers
         this._pokers = tmp
         //通知 UI 层，发生变化
-        this.emit(GameEvent.SC_PLAY, tmp)
-
+        // this.emit(GameEvent.SC_PLAY, tmp)
+        this.facade.sendNotification(GameEvent.SC_PLAY, tmp)
         //发牌
         for(let cards = GameModel.CONST_RECEIVE_GROUPS; cards >= 1; --cards) {
             for(let i=0; i<cards; ++i){
@@ -168,7 +169,12 @@ export default class GameModel  extends Model{
                 poker.status = i === 0? EPokerStatus.OPEN : EPokerStatus.CLOSE
                 cardGroup.AddPoker(poker)
                 //派发通知
-                this.emit(GameEvent.SC_INIT_GROUP_CARD, cardGroupIndex, GameModel.CONST_RECEIVE_GROUPS - cards, poker)
+                // this.emit(GameEvent.SC_INIT_GROUP_CARD, cardGroupIndex, GameModel.CONST_RECEIVE_GROUPS - cards, poker)
+                this.facade.sendNotification(GameEvent.SC_INIT_GROUP_CARD,{
+                    groupIndex: cardGroupIndex,
+                    pokerIndex: GameModel.CONST_PLAY_GROUPS -cards,
+                    poker: poker
+                })
             }
         }
         
@@ -208,8 +214,9 @@ export default class GameModel  extends Model{
                             rpg.AddPoker(poker)
                             //do sth.
                             //派发消息
-                            this.emit(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, poker)
-                            return
+                            // this.emit(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, poker)
+                            // return
+                            this.facade.sendNotification(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE,poker)
                         }
                     
                 }

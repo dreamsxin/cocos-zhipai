@@ -1,19 +1,18 @@
-import Model from "../../../GameFamework/MVC/Model";
-import View from "../../../GameFamework/MVC/View";
+
+import { puremvc } from "../../../GameFamework/MVC/puremvc";
 import UIUtil from "../../../GameFamework/Util/UIUtil";
 import { EPokerStatus } from "../../ConfigEnum";
 import Pool from "../../Pool/Pool";
 import UIPoker from "../../View/UIPoker/UIPoker";
 import GameEvent from "../GameEvent";
 import GameModel, { Poker } from "../GameModel";
-import GameScene from "../GameScene";
 
 
 
 const {ccclass, property} = cc._decorator;
 
 @ccclass
-export default class GameView extends View {
+export default class GameView extends puremvc.View<GameModel> {
     @property(cc.Prefab) pokerPrefab: cc.Prefab = null
     @property(cc.Node) initPokerArea: cc.Node = null
     @property(cc.Node) closeSendArea: cc.Node = null
@@ -22,30 +21,25 @@ export default class GameView extends View {
     @property(cc.Node) playGroupRoot: cc.Node = null
 
     private m_Model: GameModel = null
-    private m_GameScene: GameScene = null
-
-
     /********************************************************************
     * LifeCycle
     ********************************************************************/
-    public BindModel(model: GameModel) {
-        console.log('>> GameView:BindModel')
-        this.m_Model = model
-        this.m_Model.on(GameEvent.SC_INIT_POKER, this.OnEventInitPokers, this)
-        this.m_Model.on(GameEvent.SC_PLAY, this.OnEventPlay, this)
-        this.m_Model.on(GameEvent.SC_INIT_GROUP_CARD, this.OnEventInitGroupCard, this)
-        this.m_Model.on(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, this.OnEventMovePokerFromPlayToReceive, this)
-        
-    }
-
-    public UnbindModel() {
-        console.log('>> GameView:UnbindModel')
-        this.m_Model.off(GameEvent.SC_INIT_POKER, this.OnEventInitPokers)
-        this.m_Model.off(GameEvent.SC_PLAY, this.OnEventPlay)
-        this.m_Model.off(GameEvent.SC_INIT_GROUP_CARD, this.OnEventInitGroupCard)
-        this.m_Model.off(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, this.OnEventMovePokerFromPlayToReceive)
-    }
-
+    // public BindModel(model: GameModel) {
+    //     console.log('>> GameView:BindModel')
+    //     this.m_Model = model
+    //     this.m_Model.on(GameEvent.SC_INIT_POKER, this.OnEventInitPokers, this)
+    //     this.m_Model.on(GameEvent.SC_PLAY, this.OnEventPlay, this)
+    //     this.m_Model.on(GameEvent.SC_INIT_GROUP_CARD, this.OnEventInitGroupCard, this)
+    //     // this.on(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, this.OnEventMovePokerFromPlayToReceive, this.m_Model)   
+    // }
+    // public UnbindModel() {
+    //     console.log('>> GameView:UnbindModel')
+    //     this.m_Model.off(GameEvent.SC_INIT_POKER, this.OnEventInitPokers)
+    //     this.m_Model.off(GameEvent.SC_PLAY, this.OnEventPlay)
+    //     this.m_Model.off(GameEvent.SC_INIT_GROUP_CARD, this.OnEventInitGroupCard)
+    //     // this.off(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, this.OnEventMovePokerFromPlayToReceive)
+    //     this.m_Model = null;
+    // }
     // public InitPokers(pokers: Poker[]){
     //     //创建所有扑克牌 UI
     //     pokers.forEach((poker, index) => {
@@ -54,68 +48,64 @@ export default class GameView extends View {
     //         uiPoker.node.y = 0.3*index
     //         this.initPokerArea.addChild(uiPoker.node)
     //     })
-
-    // }
-    
+    // }  
     public Exit() {
         this.m_Model.pokers.forEach(p=>{
             Pool.getInstance().uipoker.put(p.view.node)
         })
     }
 
-
-
-    private OnPlay() {
-        let stack: cc.Node[] = []
-        for(let i = this.initPokerArea.children.length-1; i>=0; --i) {
-            let child = this.initPokerArea.children[i]
-            stack.push(child)
-            this.initPokerArea.removeChild(child)
+    // private OnPlay() {
+    //     let stack: cc.Node[] = []
+    //     for(let i = this.initPokerArea.children.length-1; i>=0; --i) {
+    //         let child = this.initPokerArea.children[i]
+    //         stack.push(child)
+    //         this.initPokerArea.removeChild(child)
             
-        }
-        for(let i = stack.length-1; i>=0; --i) {
-            let child = stack[i]
-            this.closeSendArea.addChild(child)
-        }
-    }
+    //     }
+    //     for(let i = stack.length-1; i>=0; --i) {
+    //         let child = stack[i]
+    //         this.closeSendArea.addChild(child)
+    //     }
+    // }
 
     /********************************************************************
     * DB  Event Handler
     ********************************************************************/
-    // listNotificationInterests(): string[]{
-    //     return [GameEvent.SC_INIT_POKER, 
-    //         GameEvent.SC_PLAY, 
-    //         GameEvent.SC_INIT_GROUP_CARD,
-    //         GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE,
-    //         GameEvent.SC_FLIP_POKER
-    //     ]
+    listNotificationInterests(): string[]{
+        return [GameEvent.SC_INIT_POKER, 
+            GameEvent.SC_PLAY, 
+            GameEvent.SC_INIT_GROUP_CARD,
+            GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE,
+            GameEvent.SC_FLIP_POKER
+        ]
 
-    // }
+    }
 
-    // handleNotification( notification:Model): void{
-    //     let notificationName = notification.getName()
-    //     let body = notification.getBody();
-    //     switch(notificationName) {
-    //         case GameEvent.SC_INIT_POKER:
-    //             this.OnEventInitPokers(body as Poker[])
-    //             break;
-    //         case GameEvent.SC_PLAY:
-    //             this.OnEventPlay()
-    //             break;
-    //         case GameEvent.SC_INIT_GROUP_CARD:
-    //             let { groupIndex, pokerIndex, poker} : {groupIndex: number, pokerIndex: number, poker: Poker} = body;
-    //             this.OnEventInitGroupCard(groupIndex, pokerIndex, poker)
-    //             break;
-    //         case GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE:
-    //             this.OnEventMovePokerFromPlayToTeceive(body as Poker)
-    //             break;
-    //         case GameEvent.SC_FLIP_POKER:
-    //             this.OnEventFlipPoker(body as Poker)
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // }
+    handleNotification( notification:puremvc.INotification ): void{
+        let notificationName = notification.getName()
+        let body = notification.getBody();
+        switch(notificationName) {
+            case GameEvent.SC_INIT_POKER:
+                this.OnEventInitPokers(body as Poker[])
+                break;
+            case GameEvent.SC_PLAY:
+                this.OnEventPlay()
+                break;
+            case GameEvent.SC_INIT_GROUP_CARD:
+                let { groupIndex, pokerIndex, poker} : {groupIndex: number, pokerIndex: number, poker: Poker} = body;
+                this.OnEventInitGroupCard(groupIndex, pokerIndex, poker)
+                break;
+            case GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE:
+                this.OnEventMovePokerFromPlayToReceive(body as Poker)
+                break;
+            case GameEvent.SC_FLIP_POKER:
+                this.OnEventFlipPoker(body as Poker)
+                break;
+            default:
+                break;
+        }
+    }
 
     
     public OnEventInitPokers(pokers: Poker[]) {
@@ -175,10 +165,11 @@ export default class GameView extends View {
         let receiveIndex: number = null
         let node = poker.view.node
         let receiveArea: cc.Node = this.receiveAreaList[receiveIndex]
+        console.log(`>> GameView:${node} receiveArea:${receiveArea.position}`)
         UIUtil.move(node, receiveArea)
         node.zIndex = poker.point
         cc.tween(node)
-            .to(0.5, {position: cc.v3(0,0,0)})
+            .to(0.5, {position: receiveArea.position})
             .start()
     }
 
@@ -196,11 +187,8 @@ export default class GameView extends View {
     * UI  Event Handler
     ********************************************************************/
     public OnClickNewGame() {
-        //  this.emit(GameEvent.ON_CLICK_NEW_GAME)
-         this.m_GameScene.NewGame()
-         
-         
-        
+        //  this.emit(GameEvent.ON_CLICK_NEW_GAME)    
+        this.facade.sendNotification(GameEvent.ON_CLICK_NEW_GAME)
     }
 
     /********************************************************************
@@ -222,7 +210,7 @@ export default class GameView extends View {
                     if(uiPoker.isPoint(1)) {
                         console.log('>> GameView:OnClickUIPoker4')
 
-                        this.emit(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, uiPoker.poker)
+                        // this.emit(GameEvent.SC_MOVE_POKER_FROM_PLAY_TO_RECEIVE, uiPoker.poker)
                     }
                 }
             }
